@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ByomWidget } from '@chat-hub/byom';
+import { ByomWidget } from '@byom/sdk';
 import type { Message } from '../types';
 import logo from '../../assets/logo.png';
 

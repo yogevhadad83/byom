@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BYOMProvider } from '@chat-hub/byom';
+import { BYOMProvider } from '@byom/sdk';
 import { io, Socket } from 'socket.io-client';
 import { Header } from '../components/Header';
 import { JoinBar } from '../components/JoinBar';

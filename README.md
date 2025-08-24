@@ -47,7 +47,7 @@ npm publish --access public
 ## Using the SDK in Your App
 
 ```tsx
-import { BYOMProvider, useBYOM } from "@chat-hub/byom";
+import { BYOMProvider, useBYOM } from "@byom/sdk";
 
 // Wrap your app
 <BYOMProvider baseUrl={import.meta.env.VITE_SAAS_BASE_URL}>
