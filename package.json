@@ -1,9 +1,13 @@
 {
-  "name": "byom-monorepo",
+  "name": "byom",
   "private": true,
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "apps/byom-chat",
+    "packages/byom-sdk"
+  ],
   "scripts": {
-  "build": "npm run build -w packages/byom-sdk && npm run build -w apps/byom-chat",
-  "start": "npm run start -w apps/byom-chat"
+    "build": "npm run build -w packages/byom-sdk && npm run build -w apps/byom-chat",
+    "start": "npm run start -w apps/byom-chat",
+    "dev": "npm run dev -w apps/byom-chat"
   }
 }
