@@ -7,7 +7,12 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173", "https://byom-chat.onrender.com"],
+    methods: ["GET", "POST"]
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 
@@ -22,8 +27,14 @@ console.log(`[byom-chat] Serving static files from: ${distDir}`);
 
 app.use(express.static(distDir));
 
+// Health check for Render and debugging
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({ ok: true, uptime: process.uptime() });
+});
+
 // Proxy API to SaaS backend (mirrors Vite dev proxy). Avoids the catch-all returning index.html with 200.
-const saasTarget = process.env.SAAS_BASE_URL || process.env.VITE_SAAS_BASE_URL || "https://chat-hub-ybyy.onrender.com";
+// Prefer runtime env; VITE_* is build-time and not reliable at runtime
+const saasTarget = process.env.SAAS_BASE_URL || "https://byom-api.onrender.com";
 console.log(`[byom-chat] Proxying /api -> ${saasTarget}`);
 app.use(
   "/api",
@@ -110,6 +121,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+server.listen({ port: PORT, host: "0.0.0.0" }, () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`[byom-chat] Serving static files from: ${distDir}`);
+  console.log(`[byom-chat] Proxying /api -> ${saasTarget}`);
 });
