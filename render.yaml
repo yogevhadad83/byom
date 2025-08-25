@@ -5,5 +5,5 @@ services:
     buildCommand: npm ci && npm run build
     startCommand: npm start
     envVars:
-      - key: VITE_SAAS_BASE_URL
+      - key: BYOM_API
         value: https://chat-hub-ybyy.onrender.com

@@ -158,8 +158,8 @@ function InnerApp() {
 }
 
 export default function App() {
-  // Use local proxy to avoid CORS in dev/preview. Can be overridden by VITE_SAAS_BASE_URL.
-  const baseUrl = import.meta.env.VITE_SAAS_BASE_URL || '/api';
+  // Use local proxy to avoid CORS in dev/preview. Can be overridden by BYOM_API.
+  const baseUrl = import.meta.env.BYOM_API || '/api';
   return (
     <BYOMProvider baseUrl={baseUrl}>
       <InnerApp />

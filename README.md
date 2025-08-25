@@ -11,7 +11,7 @@ npm run dev
 
 The dev script builds the SDK in watch mode and starts the Vite dev server for the app at http://localhost:5173.
 
-The chat app expects the BYOM backend URL to be supplied via the `VITE_SAAS_BASE_URL` environment variable.
+The chat app expects the BYOM backend URL to be supplied via the `BYOM_API` environment variable.
 
 ## Build
 
@@ -50,7 +50,7 @@ npm publish --access public
 import { BYOMProvider, useBYOM } from "@byom/sdk";
 
 // Wrap your app
-<BYOMProvider baseUrl={import.meta.env.VITE_SAAS_BASE_URL}>
+<BYOMProvider baseUrl={import.meta.env.BYOM_API}>
   <App />
 </BYOMProvider>;
 
