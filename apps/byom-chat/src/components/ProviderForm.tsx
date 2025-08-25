@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBYOM } from '@byom/sdk';
+import { useAuth } from '../store/auth';
 
 export function ProviderForm({ userId }: { userId: string }) {
   const { registerProvider } = useBYOM();
@@ -9,15 +10,20 @@ export function ProviderForm({ userId }: { userId: string }) {
   const [endpoint, setEndpoint] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [status, setStatus] = useState('');
+  const auth = useAuth();
 
   async function onSubmit() {
     try {
-      await registerProvider({
-        userId,
+      if (!auth.session) {
+        setStatus('Please log in');
+        return;
+      }
+  await registerProvider({
         provider,
         config: { apiKey, model, endpoint, systemPrompt },
       });
-      setStatus('Registered');
+  setStatus('Model connected');
+  try { window.alert('Model connected'); } catch {}
     } catch (e: any) {
       setStatus(e.message);
     }
@@ -60,8 +66,10 @@ export function ProviderForm({ userId }: { userId: string }) {
         onChange={(e) => setSystemPrompt(e.target.value)}
       />
       <button
-        className="self-start px-3 py-2 bg-green-600 text-white rounded"
+        className="self-start px-3 py-2 bg-green-600 text-white rounded disabled:opacity-50"
         onClick={onSubmit}
+        disabled={!auth.session}
+        title={!auth.session ? 'Log in to use your model' : undefined}
       >
         Use my model
       </button>

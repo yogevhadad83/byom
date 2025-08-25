@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BYOMProvider } from '@byom/sdk';
+import { supabase } from '../lib/supabase';
 import { io, Socket } from 'socket.io-client';
 import { Header } from '../components/Header';
 import { JoinBar } from '../components/JoinBar';
@@ -160,8 +161,12 @@ function InnerApp() {
 export default function App() {
   // Use local proxy to avoid CORS in dev/preview. Can be overridden by SAAS_BASE_URL.
   const baseUrl = import.meta.env.SAAS_BASE_URL || '/api';
+  const getAccessToken = async () => {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  };
   return (
-    <BYOMProvider baseUrl={baseUrl}>
+    <BYOMProvider baseUrl={baseUrl} getAccessToken={getAccessToken}>
       <InnerApp />
     </BYOMProvider>
   );

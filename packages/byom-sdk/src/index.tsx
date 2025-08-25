@@ -7,14 +7,15 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-interface ProviderProps {
+export interface ProviderProps {
   baseUrl: string;
   onError?: (e: unknown) => void;
+  // Optional async accessor to retrieve an access token to attach to API calls
+  getAccessToken?: () => Promise<string | null> | string | null;
   children: React.ReactNode;
 }
 
 interface RegisterArgs {
-  userId: string;
   provider: 'openai' | 'http';
   config: {
     apiKey?: string;
@@ -43,10 +44,14 @@ interface InvokeResult {
   meta?: { modelId?: string };
 }
 
-const Ctx = createContext<{ baseUrl: string; onError?: (e: unknown) => void } | null>(null);
+const Ctx = createContext<{
+  baseUrl: string;
+  onError?: (e: unknown) => void;
+  getAccessToken?: () => Promise<string | null> | string | null;
+} | null>(null);
 
-export function BYOMProvider({ baseUrl, onError, children }: ProviderProps) {
-  const value = useMemo(() => ({ baseUrl, onError }), [baseUrl, onError]);
+export function BYOMProvider({ baseUrl, onError, getAccessToken, children }: ProviderProps) {
+  const value = useMemo(() => ({ baseUrl, onError, getAccessToken }), [baseUrl, onError, getAccessToken]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
@@ -54,13 +59,19 @@ export function useBYOM(baseUrlOverride?: string) {
   const ctx = useContext(Ctx);
   const baseUrl = baseUrlOverride ?? ctx?.baseUrl;
   const onError = ctx?.onError;
+  const getAccessToken = ctx?.getAccessToken;
   if (!baseUrl) throw new Error('useBYOM must be used within BYOMProvider');
 
   async function registerProvider(args: RegisterArgs): Promise<void> {
+    // Do not send userId; derive from token
+    const token = (typeof getAccessToken === 'function') ? await getAccessToken() : null;
     const res = await fetch(`${baseUrl}/register-provider`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(args),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ provider: args.provider, config: args.config }),
     });
     if (!res.ok) {
       const msg = await res.text();
@@ -71,10 +82,15 @@ export function useBYOM(baseUrlOverride?: string) {
   }
 
   async function invoke(args: InvokeArgs): Promise<InvokeResult> {
-    const payload = { ...args, conversation: args.conversation.slice(-50) };
+    const { userId: _omitUserId, ...rest } = args as any;
+    const payload = { ...rest, conversation: args.conversation.slice(-50) };
+    const token = (typeof getAccessToken === 'function') ? await getAccessToken() : null;
     const res = await fetch(`${baseUrl}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify(payload),
     });
     const json = await res.json().catch(() => null);
@@ -135,7 +151,14 @@ export function ByomWidget({
     async function check() {
       if (!resolvedBase) return;
       try {
-        const res = await fetch(`${resolvedBase}/providers/${userId}`);
+        const token = (typeof ctx?.getAccessToken === 'function') ? await ctx.getAccessToken() : null;
+        if (!token) {
+          if (!cancelled) setRegistered(false);
+          return;
+        }
+        const res = await fetch(`${resolvedBase}/providers/${userId}`, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
         let ok = false;
         if (res.ok) {
           // Ensure it's JSON and contains an expected shape to avoid HTML catch-alls
@@ -159,13 +182,18 @@ export function ByomWidget({
 
   async function handleRegister() {
     try {
+      const token = (typeof ctx?.getAccessToken === 'function') ? await ctx.getAccessToken() : null;
+      if (!token) {
+        ctx?.onError?.(new Error('Please log in'));
+        return;
+      }
       await registerProvider({
-        userId,
         provider,
         config: { apiKey, model, endpoint, systemPrompt },
       });
       setRegistered(true);
       setOpen(false);
+  try { window.alert('Model connected'); } catch {}
     } catch (e) {
       console.error(e);
     }
@@ -173,6 +201,11 @@ export function ByomWidget({
 
   async function handleInvoke() {
     try {
+      const token = (typeof ctx?.getAccessToken === 'function') ? await ctx.getAccessToken() : null;
+      if (!token) {
+        ctx?.onError?.(new Error('Please log in'));
+        return;
+      }
       const prompt = getPrompt();
       onUserPrompt?.(prompt);
       const res = await invoke({

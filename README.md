@@ -12,6 +12,13 @@ npm run dev
 The dev script builds the SDK in watch mode and starts the Vite dev server for the app at http://localhost:5173.
 
 The chat app expects the BYOM backend URL to be supplied via the `SAAS_BASE_URL` environment variable.
+It also supports Supabase Email+Password auth; set in `apps/byom-chat/.env`:
+
+```
+SAAS_BASE_URL=https://byom-api.onrender.com
+VITE_SUPABASE_URL=... # your Supabase Project URL
+VITE_SUPABASE_ANON_KEY=... # your Supabase anon key
+```
 
 ## Build
 
@@ -50,7 +57,7 @@ npm publish --access public
 import { BYOMProvider, useBYOM } from "@byom/sdk";
 
 // Wrap your app
-<BYOMProvider baseUrl={import.meta.env.SAAS_BASE_URL}>
+<BYOMProvider baseUrl={import.meta.env.SAAS_BASE_URL} getAccessToken={async () => (await supabase.auth.getSession()).data.session?.access_token ?? null}>
   <App />
 </BYOMProvider>;
 

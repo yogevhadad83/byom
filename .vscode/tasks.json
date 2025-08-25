@@ -48,6 +48,26 @@
 			"type": "shell",
 			"command": "npm run build",
 			"group": "build"
+		},
+		{
+			"label": "Build chat app and SDK",
+			"type": "shell",
+			"command": "npm run build"
+		},
+		{
+			"label": "Rebuild after anchored portal",
+			"type": "shell",
+			"command": "npm run build"
+		},
+		{
+			"label": "Build after placement logic",
+			"type": "shell",
+			"command": "npm run build"
+		},
+		{
+			"label": "Rebuild after popover change",
+			"type": "shell",
+			"command": "npm run build"
 		}
 	]
 }
