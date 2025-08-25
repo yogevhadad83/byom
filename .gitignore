@@ -1,6 +1,5 @@
 node_modules
 dist
-apps/chat-hub-ui/src/**/*.js
 *.tsbuildinfo
 .env
 .DS_Store
