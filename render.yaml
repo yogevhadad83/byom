@@ -6,4 +6,4 @@ services:
     startCommand: npm start
     envVars:
       - key: BYOM_API
-        value: https://chat-hub-ybyy.onrender.com
+        value: https://byom-api.onrender.com
