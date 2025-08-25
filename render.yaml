@@ -5,5 +5,5 @@ services:
     buildCommand: npm ci && npm run build
     startCommand: npm start
     envVars:
-      - key: BYOM_API
+      - key: SAAS_BASE_URL
         value: https://byom-api.onrender.com

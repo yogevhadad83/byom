@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: process.env.BYOM_API || "https://byom-api.onrender.com",
+        target: process.env.SAAS_BASE_URL || "https://byom-api.onrender.com",
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api/, ""),
       },

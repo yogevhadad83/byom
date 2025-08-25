@@ -15,7 +15,7 @@ import { BYOMProvider, useBYOM } from '@byom/sdk';
 
 function App() {
   return (
-    <BYOMProvider baseUrl={import.meta.env.BYOM_API}>
+    <BYOMProvider baseUrl={import.meta.env.SAAS_BASE_URL}>
       <MyChat />
     </BYOMProvider>
   );

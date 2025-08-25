@@ -33,7 +33,7 @@ app.get("/healthz", (_req, res) => {
 });
 // Proxy API to SaaS backend (mirrors Vite dev proxy). Avoids the catch-all returning index.html with 200.
 // Prefer runtime env; VITE_* is build-time and not reliable at runtime
-const saasTarget = process.env.BYOM_API || "https://byom-api.onrender.com";
+const saasTarget = process.env.SAAS_BASE_URL || "https://byom-api.onrender.com";
 console.log(`[byom-chat] Proxying /api -> ${saasTarget}`);
 app.use("/api", (0, http_proxy_middleware_1.createProxyMiddleware)({
     target: saasTarget,
