@@ -2,7 +2,7 @@ services:
   - type: web
     name: byom-chat
     runtime: node
-    buildCommand: npm ci && npm run build -w apps/byom-chat
+    buildCommand: npm ci && npm run build -w packages/byom-sdk && npm run build -w apps/byom-chat
     startCommand: npm run start -w apps/byom-chat
     envVars:
       - key: SAAS_BASE_URL
