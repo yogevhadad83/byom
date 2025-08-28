@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ByomWidget } from './ByomWidget';
+import { ByomWidget } from '@byom/sdk';
 import { useAuth } from '../store/auth';
 import type { Message } from '../types';
 import logo from '../../assets/logo.png';
@@ -48,6 +48,8 @@ export function Composer({
             title={auth.session ? 'Send to AI' : 'Log in to use your model'}
           >
             <ByomWidget
+              userId={userId}
+              conversationId={conversationId}
               getSnapshot={getSnapshot}
               getPrompt={() => text}
               onAssistantMessage={onAssistantMessage}

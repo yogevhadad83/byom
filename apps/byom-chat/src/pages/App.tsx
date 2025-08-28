@@ -14,7 +14,6 @@ import {
 } from '../store/chatStore';
 import type { Message } from '../types';
 import { useAuth } from '../store/auth';
-import { bootstrapProvider } from '../store/provider';
 
 function InnerApp() {
   const auth = useAuth();
@@ -39,12 +38,7 @@ function InnerApp() {
 
   const messages = useMessages(convId);
 
-  // Bootstrap provider after a valid session is detected
-  useEffect(() => {
-    if (auth.session) {
-      void bootstrapProvider();
-    }
-  }, [auth.session]);
+  // SDK handles provider bootstrap via BYOMProvider and widget
 
   // When the user logs out or the session ends, leave the chat and reset UI
   useEffect(() => {
