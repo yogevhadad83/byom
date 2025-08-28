@@ -41,7 +41,9 @@ function setState(partial: Partial<ProviderState>) {
   emit();
 }
 
-function applyResponse(resp: ProviderResponse) {
+function applyResponse(resp: ProviderResponse | undefined) {
+  // Some backends may return 200 with no body when a provider is registered.
+  // Treat any successful fetch as "connected", and fill details when present.
   if (resp?.provider?.provider) {
     setState({
       connected: true,
@@ -49,13 +51,16 @@ function applyResponse(resp: ProviderResponse) {
       maskedConfig: resp.provider.config ?? null,
       error: null,
     });
+    return;
   }
+  // If we reached here, the request succeeded (not 401/404), so assume connected.
+  setState({ connected: true, error: null });
 }
 
 export async function bootstrapProvider() {
   try {
     setState({ loading: true, error: null });
-    const resp = await api.get<ProviderResponse>('/provider');
+    const resp = await api.get<ProviderResponse | undefined>('/provider');
     applyResponse(resp);
   } catch (e: any) {
     // If 404, not connected; leave disconnected state
