@@ -21,13 +21,13 @@ export function Header({
   }, [auth.unauthorized, open]);
   return (
     <header className="p-4 bg-gray-900 text-white flex justify-between items-center">
-      <h1 className="text-xl font-bold">Chat: {conversationId}</h1>
+      <h1 className="text-xl font-bold">{connected ? `Chat: ${conversationId}` : 'Chat'}</h1>
       <div className="flex items-center gap-3">
         <span
           className={`w-3 h-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}
           title={connected ? 'Connected' : 'Disconnected'}
         />
-        {provider.connected && (
+        {auth.user && provider.connected && (
           <span className="px-2 py-1 text-xs rounded bg-green-600/20 text-green-300 border border-green-600/40">
             Connected{provider.maskedConfig?.model ? `: ${provider.maskedConfig.model}` : ''}
           </span>
