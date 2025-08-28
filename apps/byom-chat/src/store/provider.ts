@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { api } from '../lib/api';
+import { api, ApiError } from '../lib/api';
 import type { ProviderName, ProviderConfig, ProviderResponse } from '../types';
 
 type ProviderState = {
@@ -59,10 +59,10 @@ export async function bootstrapProvider() {
     applyResponse(resp);
   } catch (e: any) {
     // If 404, not connected; leave disconnected state
-    const msg = String(e?.message || e);
-    if (/404/.test(msg) || /Not Found/i.test(msg)) {
+    if (e instanceof ApiError && e.status === 404) {
       setState({ connected: false, provider: undefined, maskedConfig: null, error: null });
     } else {
+      const msg = String(e?.message || e);
       setState({ error: msg });
     }
   } finally {
@@ -102,4 +102,3 @@ export async function disconnectProvider() {
     setState({ loading: false });
   }
 }
-
