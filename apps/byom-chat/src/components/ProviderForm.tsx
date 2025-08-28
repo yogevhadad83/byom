@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useBYOM } from '@byom/sdk';
 import { useAuth } from '../store/auth';
+import { useProvider, registerProvider, disconnectProvider } from '../store/provider';
 
-export function ProviderForm({ userId }: { userId: string }) {
-  const { registerProvider } = useBYOM();
+export function ProviderForm() {
   const [provider, setProvider] = useState<'openai' | 'http'>('openai');
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('');
@@ -11,6 +10,7 @@ export function ProviderForm({ userId }: { userId: string }) {
   const [systemPrompt, setSystemPrompt] = useState('');
   const [status, setStatus] = useState('');
   const auth = useAuth();
+  const providerState = useProvider();
 
   async function onSubmit() {
     try {
@@ -18,14 +18,14 @@ export function ProviderForm({ userId }: { userId: string }) {
         setStatus('Please log in');
         return;
       }
-  await registerProvider({
+      await registerProvider({
         provider,
         config: { apiKey, model, endpoint, systemPrompt },
       });
-  setStatus('Model connected');
-  try { window.alert('Model connected'); } catch {}
+      setStatus('Model connected');
+      try { window.alert('Model connected'); } catch {}
     } catch (e: any) {
-      setStatus(e.message);
+      setStatus(e.message || String(e));
     }
   }
 
@@ -43,36 +43,50 @@ export function ProviderForm({ userId }: { userId: string }) {
         <input
           className="p-2 bg-gray-700 text-white rounded flex-1"
           placeholder="API Key"
-          value={apiKey}
+          value={providerState.connected && providerState.maskedConfig?.apiKey ? (providerState.maskedConfig.apiKey as string) : apiKey}
           onChange={(e) => setApiKey(e.target.value)}
+          disabled={providerState.connected}
         />
         <input
           className="p-2 bg-gray-700 text-white rounded flex-1"
           placeholder="Model"
-          value={model}
+          value={providerState.connected && providerState.maskedConfig?.model ? (providerState.maskedConfig.model as string) : model}
           onChange={(e) => setModel(e.target.value)}
+          disabled={providerState.connected}
         />
         <input
           className="p-2 bg-gray-700 text-white rounded flex-1"
           placeholder="Endpoint"
-          value={endpoint}
+          value={providerState.connected && providerState.maskedConfig?.endpoint ? (providerState.maskedConfig.endpoint as string) : endpoint}
           onChange={(e) => setEndpoint(e.target.value)}
+          disabled={providerState.connected}
         />
       </div>
       <input
         className="p-2 bg-gray-700 text-white rounded"
         placeholder="System Prompt"
-        value={systemPrompt}
+        value={providerState.connected && providerState.maskedConfig?.systemPrompt ? (providerState.maskedConfig.systemPrompt as string) : systemPrompt}
         onChange={(e) => setSystemPrompt(e.target.value)}
+        disabled={providerState.connected}
       />
-      <button
-        className="self-start px-3 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-        onClick={onSubmit}
-        disabled={!auth.session}
-        title={!auth.session ? 'Log in to use your model' : undefined}
-      >
-        Use my model
-      </button>
+      <div className="flex gap-2">
+        <button
+          className="self-start px-3 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          onClick={onSubmit}
+          disabled={!auth.session}
+          title={!auth.session ? 'Log in to use your model' : undefined}
+        >
+          {providerState.connected ? 'Update' : 'Use my model'}
+        </button>
+        {providerState.connected && (
+          <button
+            className="self-start px-3 py-2 bg-red-600 text-white rounded"
+            onClick={() => disconnectProvider()}
+          >
+            Disconnect
+          </button>
+        )}
+      </div>
       {status && <p className="text-sm text-gray-300">{status}</p>}
     </div>
   );

@@ -7,3 +7,5 @@ services:
     envVars:
       - key: SAAS_BASE_URL
         value: https://byom-api.onrender.com
+      - key: VITE_BYOM_API_BASE
+        value: /api

@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useAuth, signOut } from '../store/auth';
+import { useEffect, useState } from 'react';
+import { useAuth, signOut, consumeUnauthorizedFlag } from '../store/auth';
 import { LoginModal } from './LoginModal';
+import { useProvider } from '../store/provider';
 
 export function Header({
   conversationId,
@@ -10,7 +11,14 @@ export function Header({
   connected: boolean;
 }) {
   const auth = useAuth();
+  const provider = useProvider();
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (auth.unauthorized && !open) {
+      setOpen(true);
+      consumeUnauthorizedFlag();
+    }
+  }, [auth.unauthorized, open]);
   return (
     <header className="p-4 bg-gray-900 text-white flex justify-between items-center">
       <h1 className="text-xl font-bold">Chat: {conversationId}</h1>
@@ -19,6 +27,11 @@ export function Header({
           className={`w-3 h-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}
           title={connected ? 'Connected' : 'Disconnected'}
         />
+        {provider.connected && (
+          <span className="px-2 py-1 text-xs rounded bg-green-600/20 text-green-300 border border-green-600/40">
+            Connected{provider.maskedConfig?.model ? `: ${provider.maskedConfig.model}` : ''}
+          </span>
+        )}
         {auth.user ? (
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-200">{auth.user.email}</span>

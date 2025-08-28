@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { BYOMProvider } from '@byom/sdk';
 import { supabase } from '../lib/supabase';
 import { io, Socket } from 'socket.io-client';
 import { Header } from '../components/Header';
@@ -14,8 +13,11 @@ import {
   type StoredMessage,
 } from '../store/chatStore';
 import type { Message } from '../types';
+import { useAuth } from '../store/auth';
+import { bootstrapProvider } from '../store/provider';
 
 function InnerApp() {
+  const auth = useAuth();
   const [userId, setUserId] = useState(() => {
     return (
       localStorage.getItem('userId') ||
@@ -36,6 +38,13 @@ function InnerApp() {
   }, [convId]);
 
   const messages = useMessages(convId);
+
+  // Bootstrap provider after a valid session is detected
+  useEffect(() => {
+    if (auth.session) {
+      void bootstrapProvider();
+    }
+  }, [auth.session]);
 
   const handleJoin = () => {
     // Allow overriding socket endpoint in dev via VITE_SOCKET_URL; default to same-origin
@@ -159,15 +168,5 @@ function InnerApp() {
 }
 
 export default function App() {
-  // Use local proxy to avoid CORS in dev/preview. Can be overridden by SAAS_BASE_URL.
-  const baseUrl = import.meta.env.SAAS_BASE_URL || '/api';
-  const getAccessToken = async () => {
-    const { data } = await supabase.auth.getSession();
-    return data.session?.access_token ?? null;
-  };
-  return (
-    <BYOMProvider baseUrl={baseUrl} getAccessToken={getAccessToken}>
-      <InnerApp />
-    </BYOMProvider>
-  );
+  return <InnerApp />;
 }
