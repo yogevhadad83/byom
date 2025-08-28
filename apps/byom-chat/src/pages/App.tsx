@@ -46,6 +46,18 @@ function InnerApp() {
     }
   }, [auth.session]);
 
+  // When the user logs out or the session ends, leave the chat and reset UI
+  useEffect(() => {
+    if (!auth.session) {
+      // Disconnect socket and reset joined state
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+      setJoined(false);
+      // Clear local message cache for current conversation
+      setMessages(convId, []);
+    }
+  }, [auth.session, convId]);
+
   const handleJoin = () => {
     // Allow overriding socket endpoint in dev via VITE_SOCKET_URL; default to same-origin
     const socketUrl = (import.meta as any).env?.VITE_SOCKET_URL || undefined;
