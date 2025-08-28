@@ -10,6 +10,11 @@ type Props = {
 
 export function ChatWindow({ userId, messages, onPublish }: Props) {
   const auth = useAuth();
+  const userLabel =
+    ((auth.user?.user_metadata as any)?.full_name ||
+      (auth.user?.user_metadata as any)?.name ||
+      (auth.user?.email ? auth.user.email.split('@')[0] : '') ||
+      'your');
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
       {messages.map((m, i) => {
@@ -26,7 +31,7 @@ export function ChatWindow({ userId, messages, onPublish }: Props) {
               }`}
             >
               <div
-                className={`px-4 py-3 rounded-2xl shadow-sm border text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                className={`relative px-4 py-3 rounded-2xl shadow-sm border text-sm leading-relaxed whitespace-pre-wrap break-words ${
                   isMine
                     ? 'bg-blue-600 text-white border-blue-500'
                     : isOtherUser
@@ -34,6 +39,15 @@ export function ChatWindow({ userId, messages, onPublish }: Props) {
                     : 'bg-white text-gray-900 border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700'
                 } ${isEphemeral ? 'opacity-80 ring-1 ring-amber-400/60' : ''}`}
               >
+                {/* AI badge on the message bubble when user message was sent to AI */}
+                {m.role === 'user' && sentToAI && (
+                  <span
+                    className={`absolute -top-2 ${isMine ? '-right-2' : '-left-2'} rounded-full bg-white shadow ring-1 ring-blue-300 p-0.5`}
+                    title="Sent to AI"
+                  >
+                    <img src={aiIcon} alt="AI" className="w-3.5 h-3.5" />
+                  </span>
+                )}
                 {m.text}
               </div>
               {isEphemeral && (
@@ -45,21 +59,16 @@ export function ChatWindow({ userId, messages, onPublish }: Props) {
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <div
+              className={`mt-1 text-xs text-gray-500 dark:text-gray-400 ${
+                isMine ? 'text-right' : 'text-left'
+              }`}
+            >
               {isAssistant && (
-                <span className="inline-block">
-                  {`served by ${
-                    ((auth.user?.user_metadata as any)?.full_name ||
-                      (auth.user?.user_metadata as any)?.name ||
-                      (auth.user?.email ? auth.user.email.split('@')[0] : '') ||
-                      'your')
-                  }'s AI model`}
-                </span>
+                <span className="inline-block">{`served by ${userLabel}'s AI model`}</span>
               )}
               {m.role === 'user' && sentToAI && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/30">
-                  <img src={aiIcon} alt="AI" className="w-3.5 h-3.5" />
-                </span>
+                <span className="inline-block">{`sent to ${userLabel}'s AI model`}</span>
               )}
             </div>
             <div className="text-[10px] mt-0.5 text-gray-400">
