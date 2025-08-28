@@ -42,8 +42,6 @@ function setState(partial: Partial<ProviderState>) {
 }
 
 function applyResponse(resp: ProviderResponse | undefined) {
-  // Some backends may return 200 with no body when a provider is registered.
-  // Treat any successful fetch as "connected", and fill details when present.
   if (resp?.provider?.provider) {
     setState({
       connected: true,
@@ -51,10 +49,10 @@ function applyResponse(resp: ProviderResponse | undefined) {
       maskedConfig: resp.provider.config ?? null,
       error: null,
     });
-    return;
+  } else {
+    // No provider in response means not connected
+    setState({ connected: false, provider: undefined, maskedConfig: null, error: null });
   }
-  // If we reached here, the request succeeded (not 401/404), so assume connected.
-  setState({ connected: true, error: null });
 }
 
 export async function bootstrapProvider() {
@@ -106,4 +104,10 @@ export async function disconnectProvider() {
   } finally {
     setState({ loading: false });
   }
+}
+
+// Local-only reset, used on sign-out to avoid stale connected UI without
+// deleting the server-side registration.
+export function clearProviderLocal() {
+  setState({ connected: false, provider: undefined, maskedConfig: null, error: null });
 }

@@ -14,6 +14,7 @@ import {
 } from '../store/chatStore';
 import type { Message } from '../types';
 import { useAuth } from '../store/auth';
+import { bootstrapProvider, clearProviderLocal } from '../store/provider';
 
 function InnerApp() {
   const auth = useAuth();
@@ -49,6 +50,11 @@ function InnerApp() {
       setJoined(false);
       // Clear local message cache for current conversation
       setMessages(convId, []);
+      // Reset provider UI locally; server registration remains associated with user
+      clearProviderLocal();
+    } else {
+      // On login, check if a provider is already registered for this user
+      bootstrapProvider();
     }
   }, [auth.session, convId]);
 

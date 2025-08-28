@@ -29,7 +29,7 @@ export function Header({
         />
         {auth.user && provider.connected && (
           <span className="px-2 py-1 text-xs rounded bg-green-600/20 text-green-300 border border-green-600/40">
-            Connected{provider.maskedConfig?.model ? `: ${provider.maskedConfig.model}` : ''}
+            {provider.maskedConfig?.model ? `Connected to ${provider.maskedConfig.model}` : 'Connected'}
           </span>
         )}
         {auth.user ? (

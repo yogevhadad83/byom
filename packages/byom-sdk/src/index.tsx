@@ -156,15 +156,14 @@ export function ByomWidget({
           if (!cancelled) setRegistered(false);
           return;
         }
-        const res = await fetch(`${resolvedBase}/providers/${userId}`, {
-          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        const res = await fetch(`${resolvedBase}/provider`, {
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         });
         let ok = false;
         if (res.ok) {
-          // Ensure it's JSON and contains an expected shape to avoid HTML catch-alls
           try {
             const data = await res.clone().json();
-            ok = !!data && (Array.isArray(data) || typeof data === 'object');
+            ok = !!data && typeof data === 'object' && !!(data as any).provider?.provider;
           } catch {
             ok = false;
           }
