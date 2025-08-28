@@ -30,6 +30,16 @@ export function Composer({
           className="w-full p-2 bg-gray-700 text-white rounded pr-28"
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const t = text.trim();
+              if (t) {
+                onSend(t);
+                setText('');
+              }
+            }
+          }}
           placeholder="Type a message"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">

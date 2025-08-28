@@ -31,7 +31,8 @@ export function ByomWidget({
   const [endpoint, setEndpoint] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [editing, setEditing] = useState(false);
-  const disabled = !auth.session;
+  const [invoking, setInvoking] = useState(false);
+  const disabled = !auth.session || provider.loading || invoking;
 
   // Pre-fill masked config if connected
   useEffect(() => {
@@ -74,6 +75,7 @@ export function ByomWidget({
         setOpen(true);
         return;
       }
+      setInvoking(true);
       const prompt = getPrompt();
       onUserPrompt?.(prompt);
       const payload = {
@@ -87,6 +89,8 @@ export function ByomWidget({
       onAssistantMessage({ text: res.reply, meta: res.meta });
     } catch (e: any) {
       onAssistantMessage({ text: String(e?.message || e) });
+    } finally {
+      setInvoking(false);
     }
   }
 
@@ -97,10 +101,21 @@ export function ByomWidget({
       <button
         className={`group relative flex items-center justify-center overflow-hidden rounded-full border border-white/70 shadow-sm focus:outline-none focus:ring-2 focus:ring-white/70 transition-all duration-200 w-8 h-8 hover:w-32 ${
           connected ? 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-white/90'
-        } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+        } ${disabled ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
         onClick={disabled ? undefined : handleInvoke}
         aria-label={connected ? 'Send to AI' : buttonAriaLabel}
-        title={disabled ? 'Log in to use your model' : connected ? 'Send to AI' : buttonAriaLabel}
+        title={
+          !auth.session
+            ? 'Log in to use your model'
+            : provider.loading
+            ? 'Checking provider...'
+            : invoking
+            ? 'Waiting for model response...'
+            : connected
+            ? 'Send to AI'
+            : buttonAriaLabel
+        }
+        aria-disabled={disabled}
       >
         {buttonLogoSrc ? (
           <img src={buttonLogoSrc} alt={buttonAriaLabel} className="w-5 h-5 object-contain" />
@@ -208,4 +223,3 @@ export function ByomWidget({
     document.body
   );
 }
-

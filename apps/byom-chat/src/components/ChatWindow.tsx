@@ -1,4 +1,6 @@
 import { Message } from '../types';
+import { useAuth } from '../store/auth';
+import aiIcon from '../../assets/ai.svg';
 
 type Props = {
   userId: string;
@@ -7,6 +9,7 @@ type Props = {
 };
 
 export function ChatWindow({ userId, messages, onPublish }: Props) {
+  const auth = useAuth();
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
       {messages.map((m, i) => {
@@ -43,12 +46,19 @@ export function ChatWindow({ userId, messages, onPublish }: Props) {
               )}
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {isAssistant && m.meta?.modelId && (
-                <span className="inline-block">served by {m.meta.modelId}</span>
+              {isAssistant && (
+                <span className="inline-block">
+                  {`served by ${
+                    ((auth.user?.user_metadata as any)?.full_name ||
+                      (auth.user?.user_metadata as any)?.name ||
+                      (auth.user?.email ? auth.user.email.split('@')[0] : '') ||
+                      'your')
+                  }'s AI model`}
+                </span>
               )}
               {m.role === 'user' && sentToAI && (
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/30">
-                  sent to AI
+                  <img src={aiIcon} alt="AI" className="w-3.5 h-3.5" />
                 </span>
               )}
             </div>
